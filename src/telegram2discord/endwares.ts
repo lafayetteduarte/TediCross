@@ -243,11 +243,18 @@ export const handleEdits = createMessageHandler(async (ctx: TediCrossContext, br
 			);
 
 			R.forEach(async (prepared: any) => {
-				// Discord doesn't handle messages longer than 2000 characters. Take only the first 2000
-				const messageText = R.slice(0, 2000, prepared.header + "\n" + prepared.text);
+				try {
 
-				// Send them in serial, with the attachment first, if there is one
-				await dcMessage.edit({ content: messageText, attachment: prepared.attachment } as MessageEditOptions);
+					// Discord doesn't handle messages longer than 2000 characters. Take only the first 2000
+					const messageText = R.slice(0, 2000, prepared.header + "\n" + prepared.text);
+
+					// Send them in serial, with the attachment first, if there is one
+					await dcMessage.edit({ content: messageText, attachment: prepared.attachment } as MessageEditOptions);
+
+				} catch (err: any) {
+					//console.error(`this is wierd. should not be here. here is some debug info that should be be here : ${JSON.stringify(prepared)}`);
+					console.error(`#### error trying to edit msg - Could not cross-edit message from Telegram to Discord on bridge ${bridge.name}: ${err.message}`);
+				}
 			})(ctx.tediCross.prepared);
 		} catch (err: any) {
 			// Log it
